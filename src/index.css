@@ -1,0 +1,11 @@
+body {
+    padding: 20px;
+}
+
+button {
+    text-transform: capitalize;
+}
+
+option {
+    text-transform: capitalize;
+}
