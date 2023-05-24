@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import axios, { CanceledError } from "axios";
 import { useEffect, useState } from "react";
 
 const URL = "https://jsonplaceholder.typicode.com/users";
@@ -12,18 +12,16 @@ function App() {
     name: string;
   }
   useEffect(() => {
-    const fetchUsers = async () =>{
-      try {
-        const res = await axios.get<User[]>(URL)
-        setUsers(res.data)
-      } catch (error) {
-        setError((error as AxiosError).message)
-      }
-      fetchUsers()
-        // .then((response) => )
-        // .catch((err) => 
+    const controller = new AbortController()
+    axios
+      .get<User[]>(URL, { signal: controller.signal})
+      .then((response) => setUsers(response.data))
+      .catch((err) => {
+        if(err instanceof CanceledError) return;
+        setError(err.message)
+      })
 
-    }
+    return () => controller.abort()
   }, []);
 
   return (
