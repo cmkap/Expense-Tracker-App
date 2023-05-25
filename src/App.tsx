@@ -32,28 +32,47 @@ function App() {
     return () => controller.abort();
   }, []);
 
-  const deleteUser = (user:User) => {
-    const originalUsers = [...users]
-    setUsers(users.filter(u=> u.id !== user.id))
-    axios.delete(URL + `/${user.id}`).catch(error => {
-      setError(error.message)
-      setUsers(originalUsers)
-    })
-    
+  const deleteUser = (user: User) => {
+    const originalUsers = [...users];
+    setUsers(users.filter((u) => u.id !== user.id));
+    axios.delete(URL + `/${user.id}`).catch((error) => {
+      setError(error.message);
+      setUsers(originalUsers);
+    });
+  };
 
-  }
+  const addUser = () => {
+    const originalUsers = [...users]
+    const newUser = { id: 0, name: "James Jones" };
+    setUsers([newUser, ...users])
+    axios
+      .post(URL, newUser).then(({data: savedUser}) => setUsers([savedUser,...users ]) ) // refreshes and is persistant - this has the new id 
+      .catch(err => {
+        setError(err.message)
+        setUsers(originalUsers)
+      })
+  };
 
   return (
     <>
       {error && <p className="text-danger">{error}</p>}
       {isLoading && <div className="spinner-border"></div>}
+      <button className="btn btn-primary mb-3" onClick={addUser}>
+        Add
+      </button>
       <ul className="list-group ">
         {users.map((user) => (
           <li
             key={user.id}
             className="list-group-item d-flex justify-content-between"
           >
-            {user.name} <button className="btn btn-outline-danger" onClick={() => deleteUser(user) }>Delete</button>
+            {user.name}{" "}
+            <button
+              className="btn btn-outline-danger"
+              onClick={() => deleteUser(user)}
+            >
+              Delete
+            </button>
           </li>
         ))}
       </ul>
