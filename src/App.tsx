@@ -42,15 +42,27 @@ function App() {
   };
 
   const addUser = () => {
-    const originalUsers = [...users]
+    const originalUsers = [...users];
     const newUser = { id: 0, name: "James Jones" };
-    setUsers([newUser, ...users])
+    setUsers([newUser, ...users]);
     axios
-      .post(URL, newUser).then(({data: savedUser}) => setUsers([savedUser,...users ]) ) // refreshes and is persistant - this has the new id 
-      .catch(err => {
-        setError(err.message)
-        setUsers(originalUsers)
-      })
+      .post(URL, newUser)
+      .then(({ data: savedUser }) => setUsers([savedUser, ...users])) // refreshes and is persistant - this has the new id
+      .catch((err) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+
+  const updateUser = (user: User) => {
+    const originalUsers = [...users];
+    const updatedUser = { ...user, name: user.name + "!" };
+    setUsers(users.map((u) => (u.id === user.id ? updatedUser : u)));
+    axios.patch(URL + `/${user.id}`, updatedUser)
+      .catch((err) => {
+      setError(err.message);
+      setUsers(originalUsers);
+    });
   };
 
   return (
@@ -66,13 +78,21 @@ function App() {
             key={user.id}
             className="list-group-item d-flex justify-content-between"
           >
-            {user.name}{" "}
-            <button
-              className="btn btn-outline-danger"
-              onClick={() => deleteUser(user)}
-            >
-              Delete
-            </button>
+            {user.name}
+            <div>
+              <button
+                className="btn btn-outline-secondary mx-1"
+                onClick={() => updateUser(user)}
+              >
+                Update
+              </button>
+              <button
+                className="btn btn-outline-danger"
+                onClick={() => deleteUser(user)}
+              >
+                Delete
+              </button>
+            </div>
           </li>
         ))}
       </ul>
