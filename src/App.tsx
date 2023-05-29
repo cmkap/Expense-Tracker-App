@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 
-import apiClient, { CanceledError } from "./services/api-client";
+import { CanceledError } from "./services/api-client";
 import userService, { User } from "./services/user-service";
 
-const URL = "https://jsonplaceholder.typicode.com/users";
 
 function App() {
   const [users, setUsers] = useState<User[]>([]);
