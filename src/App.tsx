@@ -1,7 +1,7 @@
-
 import { useEffect, useState } from "react";
 
-import apiClient, { CanceledError }from "./services/api-client";
+import apiClient, { CanceledError } from "./services/api-client";
+import userService, { User } from "./services/user-service";
 
 const URL = "https://jsonplaceholder.typicode.com/users";
 
@@ -10,16 +10,11 @@ function App() {
   const [error, setError] = useState("");
   const [isLoading, setLoading] = useState(false);
 
-  interface User {
-    id: number;
-    name: string;
-  }
   useEffect(() => {
-    const controller = new AbortController();
-
     setLoading(true);
-    apiClient
-      .get<User[]>('/users', { signal: controller.signal })
+
+    const { request, cancel } = userService.getAllUsers();
+    request
       .then((response) => {
         setUsers(response.data);
         setLoading(false);
@@ -31,13 +26,13 @@ function App() {
       });
     // .finally(() => setLoading(false)) - this is the best solution but does not work in strict mode
 
-    return () => controller.abort();
+    return () => cancel();
   }, []);
 
   const deleteUser = (user: User) => {
     const originalUsers = [...users];
     setUsers(users.filter((u) => u.id !== user.id));
-    apiClient.delete('/users' + `/${user.id}`).catch((error) => {
+    userService.deleteUser(user.id).catch((error) => {
       setError(error.message);
       setUsers(originalUsers);
     });
@@ -47,8 +42,9 @@ function App() {
     const originalUsers = [...users];
     const newUser = { id: 0, name: "James Jones" };
     setUsers([newUser, ...users]);
-    apiClient
-      .post('/users', newUser)
+
+    userService
+      .createUser(newUser)
       .then(({ data: savedUser }) => setUsers([savedUser, ...users])) // refreshes and is persistant - this has the new id
       .catch((err) => {
         setError(err.message);
@@ -60,8 +56,7 @@ function App() {
     const originalUsers = [...users];
     const updatedUser = { ...user, name: user.name + "!" };
     setUsers(users.map((u) => (u.id === user.id ? updatedUser : u)));
-    apiClient.patch('/users' + `/${user.id}`, updatedUser)
-      .catch((err) => {
+    userService.updateUser(updatedUser).catch((err) => {
       setError(err.message);
       setUsers(originalUsers);
     });
